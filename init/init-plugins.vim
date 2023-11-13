@@ -9,16 +9,13 @@
 " vim: set ts=4 sw=4 tw=78 noet :
 
 
-
 "----------------------------------------------------------------------
-" 默认情况下的分组，可以再前面覆盖之
+" 需要添加的插件可以 +=对应的插件
 "----------------------------------------------------------------------
 if !exists('g:bundle_group')
-	let g:bundle_group = ['basic', 'tags', 'enhanced', 'filetypes', 'textobj']
-	let g:bundle_group += ['tags', 'airline', 'nerdtree', 'ale', 'echodoc']
-	let g:bundle_group += ['leaderf']
+	let g:bundle_group = ['tags']
+	let g:bundle_group += ['airline', 'nerdtree']
 endif
-
 
 "----------------------------------------------------------------------
 " 计算当前 vim-init 的子路径
@@ -41,110 +38,21 @@ call plug#begin(get(g:, 'bundle_home', '~/.vim/bundles'))
 " 默认插件 
 "----------------------------------------------------------------------
 
-" 全文快速移动，<leader><leader>f{char} 即可触发
-Plug 'easymotion/vim-easymotion'
-
-" 文件浏览器，代替 netrw
-Plug 'justinmk/vim-dirvish'
-
-" 表格对齐，使用命令 Tabularize
-Plug 'godlygeek/tabular', { 'on': 'Tabularize' }
-
 " Diff 增强，支持 histogram / patience 等更科学的 diff 算法
-Plug 'chrisbra/vim-diff-enhanced'
-
-
-"----------------------------------------------------------------------
-" Dirvish 设置：自动排序并隐藏文件，同时定位到相关文件
-" 这个排序函数可以将目录排在前面，文件排在后面，并且按照字母顺序排序
-" 比默认的纯按照字母排序更友好点。
-"----------------------------------------------------------------------
-function! s:setup_dirvish()
-	if &buftype != 'nofile' && &filetype != 'dirvish'
-		return
-	endif
-	if has('nvim')
-		return
-	endif
-	" 取得光标所在行的文本（当前选中的文件名）
-	let text = getline('.')
-	if ! get(g:, 'dirvish_hide_visible', 0)
-		exec 'silent keeppatterns g@\v[\/]\.[^\/]+[\/]?$@d _'
-	endif
-	" 排序文件名
-	exec 'sort ,^.*[\/],'
-	let name = '^' . escape(text, '.*[]~\') . '[/*|@=|\\*]\=\%($\|\s\+\)'
-	" 定位到之前光标处的文件
-	call search(name, 'wc')
-	noremap <silent><buffer> ~ :Dirvish ~<cr>
-	noremap <buffer> % :e %
-endfunc
-
-augroup MyPluginSetup
-	autocmd!
-	autocmd FileType dirvish call s:setup_dirvish()
-augroup END
-
+"Plug 'chrisbra/vim-diff-enhanced'
 
 "----------------------------------------------------------------------
 " 基础插件
 "----------------------------------------------------------------------
 if index(g:bundle_group, 'basic') >= 0
 
-	" 展示开始画面，显示最近编辑过的文件
-	Plug 'mhinz/vim-startify'
-
-	" 一次性安装一大堆 colorscheme
-	Plug 'flazz/vim-colorschemes'
-
-	" 支持库，给其他插件用的函数库
-	Plug 'xolox/vim-misc'
-
-	" 用于在侧边符号栏显示 marks （ma-mz 记录的位置）
-	Plug 'kshenoy/vim-signature'
-
-	" 用于在侧边符号栏显示 git/svn 的 diff
-	Plug 'mhinz/vim-signify'
-
-	" 根据 quickfix 中匹配到的错误信息，高亮对应文件的错误行
-	" 使用 :RemoveErrorMarkers 命令或者 <space>ha 清除错误
-	Plug 'mh21/errormarker.vim'
-
-	" 使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
-	Plug 't9md/vim-choosewin'
-
-	" 提供基于 TAGS 的定义预览，函数参数预览，quickfix 预览
-	Plug 'skywind3000/vim-preview'
-
-	" Git 支持
-	Plug 'tpope/vim-fugitive'
-
-	" 使用 ALT+E 来选择窗口
-	nmap <m-e> <Plug>(choosewin)
-
-	" 默认不显示 startify
-	let g:startify_disable_at_vimenter = 1
-	let g:startify_session_dir = '~/.vim/session'
-
-	" 使用 <space>ha 清除 errormarker 标注的错误
-	noremap <silent><space>ha :RemoveErrorMarkers<cr>
-
-	" signify 调优
-	let g:signify_vcs_list = ['git', 'svn']
-	let g:signify_sign_add               = '+'
-	let g:signify_sign_delete            = '_'
-	let g:signify_sign_delete_first_line = '‾'
-	let g:signify_sign_change            = '~'
-	let g:signify_sign_changedelete      = g:signify_sign_change
-
-	" git 仓库使用 histogram 算法进行 diff
-	let g:signify_vcs_cmds = {
-			\ 'git': 'git diff --no-color --diff-algorithm=histogram --no-ext-diff -U0 -- %f',
-			\}
 endif
 
 
 "----------------------------------------------------------------------
+" git 插件
+"----------------------------------------------------------------------
+
 " 增强插件
 "----------------------------------------------------------------------
 if index(g:bundle_group, 'enhanced') >= 0
@@ -183,6 +91,8 @@ endif
 "----------------------------------------------------------------------
 if index(g:bundle_group, 'tags') >= 0
 
+	" 快速预览代码
+	Plug 'skywind3000/vim-preview'
 	" 提供 ctags/gtags 后台数据库自动更新功能
 	Plug 'skywind3000/vim-gutentags'
 
@@ -190,37 +100,84 @@ if index(g:bundle_group, 'tags') >= 0
 	" 支持光标移动到符号名上：<leader>cg 查看定义，<leader>cs 查看引用
 	Plug 'skywind3000/gutentags_plus'
 
-	" 设定项目目录标志：除了 .git/.svn 外，还有 .root 文件
-	let g:gutentags_project_root = ['.root']
+" -----------------------------------------------------------------------------
+"  "  < gtags(global) 工具配置 >
+"  "
+"  -----------------------------------------------------------------------------
+" gutentags 搜索工程目录的标志，当前文件路径向上递归直到碰到这些文件/目录名
+" *** 即只有包含这些文件夹的才会作为一个工程目录自动生成gtags
+	let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
+
+" 所生成的数据文件的名称
 	let g:gutentags_ctags_tagfile = '.tags'
 
-	" 默认生成的数据文件集中到 ~/.cache/tags 避免污染项目目录，好清理
-	let g:gutentags_cache_dir = expand('~/.cache/tags')
-
-	" 默认禁用自动生成
-	let g:gutentags_modules = [] 
-
-	" 如果有 ctags 可执行就允许动态生成 ctags 文件
+" 同时开启 ctags 和 gtags 支持：
+	let g:gutentags_modules = []
 	if executable('ctags')
-		let g:gutentags_modules += ['ctags']
+	let g:gutentags_modules += ['ctags']
 	endif
-
-	" 如果有 gtags 可执行就允许动态生成 gtags 数据库
-	if executable('gtags') && executable('gtags-cscope')
+	if executable('gtags-cscope') && executable('gtags')
 		let g:gutentags_modules += ['gtags_cscope']
 	endif
 
-	" 设置 ctags 的参数
-	let g:gutentags_ctags_extra_args = []
+" 将自动生成的 ctags/gtags 文件全部放入 ~/.cache/tags目录中，避免污染工程目录
+	let g:gutentags_cache_dir = expand('~/.cache/tags')
+
+" 配置 ctags 的参数，老的 Exuberant-ctags 不能有--extra=+q，注意
 	let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
 	let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
 	let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
 
-	" 使用 universal-ctags 的话需要下面这行，请反注释
-	" let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
+" 如果使用 universal ctags 需要增加下面一行，老的Exuberant-ctags 不能加下一行
+	let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
 
-	" 禁止 gutentags 自动链接 gtags 数据库
+" 禁用 gutentags 自动加载 gtags 数据库的行为
 	let g:gutentags_auto_add_gtags_cscope = 0
+
+" 修复ERROR: gutentags: gtags-cscope job failed, returned: 1
+" ref https://github.com/skywind3000/gutentags_plus
+	let g:gutentags_define_advanced_commands = 1
+
+" -----------------------------------------------------------------------------
+"  "  < gutentags_plus 工具配置 >
+"  "
+"  -----------------------------------------------------------------------------
+
+" 自动跳转到quickfix界面
+	let g:gutentags_plus_switch = 1
+
+" 默认键位修改
+	let g:gutentags_plus_nomap = 1 " disable default key-map
+
+"<leader>s	Find symbol (reference) under cursor
+"<leader>g	Find symbol definition under cursor
+"<leader>gd	Functions called by this function
+"<leader>gc	Functions calling this function
+"<leader>gt	Find text string under cursor
+"<leader>ge	Find egrep pattern under cursor
+"<leader>f	Find file name under cursor
+"<leader>gi	Find files #including the file name under cursor
+"<leader>ga	Find places where current symbol is assigned
+"<leader>gz	Find current word in ctags database
+
+	noremap <silent> <leader>s :GscopeFind s <C-R><C-W><cr>
+	noremap <silent> <leader>g :GscopeFind g <C-R><C-W><cr>
+	noremap <silent> <leader>gc :GscopeFind c <C-R><C-W><cr>
+	noremap <silent> <leader>gt :GscopeFind t <C-R><C-W><cr>
+	noremap <silent> <leader>ge :GscopeFind e <C-R><C-W><cr>
+	noremap <silent> <leader>f :GscopeFind f <C-R>=expand("<cfile>")<cr><cr>
+	noremap <silent> <leader>gi :GscopeFind i <C-R>=expand("<cfile>")<cr><cr>
+	noremap <silent> <leader>gd :GscopeFind d <C-R><C-W><cr>
+	noremap <silent> <leader>ga :GscopeFind a <C-R><C-W><cr>
+	noremap <silent> <leader>gz :GscopeFind z <C-R><C-W><cr>
+
+" -----------------------------------------------------------------------------
+"  "  < vim-preview 工具配置 >
+"  "
+"  -----------------------------------------------------------------------------
+	autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
+	autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
+
 endif
 
 
@@ -311,10 +268,16 @@ if index(g:bundle_group, 'nerdtree') >= 0
 	let g:NERDTreeMinimalUI = 1
 	let g:NERDTreeDirArrows = 1
 	let g:NERDTreeHijackNetrw = 0
-	noremap <space>nn :NERDTree<cr>
-	noremap <space>no :NERDTreeFocus<cr>
-	noremap <space>nm :NERDTreeMirror<cr>
-	noremap <space>nt :NERDTreeToggle<cr>
+"	noremap <space>nn :NERDTree<cr>
+"	noremap <space>no :NERDTreeFocus<cr>
+"	noremap <space>nm :NERDTreeMirror<cr>
+"	noremap <space>nt :NERDTreeToggle<cr>
+
+	nnoremap nd :NERDTreeToggle<CR>
+	" Exit Vim if NERDTree is the only window remaining in the only tab.
+	autocmd BufEnter * if tabpagenr('$') == 1 && winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | quit | endif
+	" " Close the tab if NERDTree is the only window remaining in it.
+	autocmd BufEnter * if winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | quit | endif
 endif
 
 

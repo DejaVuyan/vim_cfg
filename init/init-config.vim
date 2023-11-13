@@ -106,7 +106,14 @@ set backupext=.bak
 set noswapfile
 
 " 禁用 undo文件
-set noundofile
+" set noundofile
+
+set undofile
+set undodir=~/.vim/.undo// 
+set history=1000
+
+" 自动切换工作路径
+set autochdir
 
 " 创建目录，并且忽略可能出现的警告
 silent! call mkdir(expand('~/.vim/tmp'), "p", 0755)
